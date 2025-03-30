@@ -8,3 +8,4 @@ Grupo 12 de Simulación - Curso 4K3
 - Funes Francisco 73037
 - Matias Cociglio 91651
 - Francisco Calabró 86557
+- Delgado Alexis 95227
