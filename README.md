@@ -1,4 +1,4 @@
-# Simulacion - Grupo 12
+# Simulación - Grupo 12
 Grupo 12 de Simulación - Curso 4K3
 ### Integrantes
 - Padilla Tomás 94192
