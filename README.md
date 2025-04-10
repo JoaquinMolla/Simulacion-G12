@@ -9,3 +9,4 @@ Grupo 12 de Simulación - Curso 4K3
 - Matias Cociglio 91651
 - Francesco Calabró 86557
 - Delgado Alexis 95227
+- Tobias Jurgens 97342
