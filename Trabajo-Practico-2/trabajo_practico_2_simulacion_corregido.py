@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
+import random 
+import math
 '''
 Trabajo práctico 2 de Simulación Curso 4K3 2025 - Grupo 12
 
@@ -139,7 +141,72 @@ class GeneradorNumerosAleatorios:
             self.mostrar_params_exponencial()
         elif distribucion == "normal":
             self.mostrar_params_normal()
+
+    @staticmethod
+    def generar_rnd(semilla, tamaño_muestra):
+        #Utilizamos el metodo congruencial lineal para generar numeros random [0;1)
+        k = 4
+        a = 1664525   # Multiplicador
+        c   = 1013904223 # Incremento
+        m = 2**32    # Módulo
+        x = semilla    
+        numeros = []
+
+        for i in range(tamaño_muestra):
+            x = (a * x + c) % m  # Fórmula del MCL
+            u = x / m   # Normalización a [0,1)
+            numeros.append(u)
+
+        return numeros
+    #El numero devuelto nunca será 1 ya que xi asume valores entre (0;m-1) y al dividir por m nunca dará 1.
+
+    # Recibe como parametro el arreglo de s U[0;1) y lambda
+    @staticmethod
+    def generar_exponencial(numeros_u, lambda_val):
+        # Método de la transformada inversa para distribución exponencial
+        # Si U ~ Uniforme(0,1), entonces X = -ln(U)/λ ~ Exponencial(λ)
+        return [-math.log(1.0 - u) / lambda_val for u in numeros_u]
     
+
+    # Recibe como parametro el arreglo de numeros U[0;1), la media y la desviación estandar
+    @staticmethod
+    def generar_normal(numeros_u, mu, sigma):
+        # Método de Box-Muller para distribución normal
+        # Si U1, U2 ~ Uniforme(0,1), entonces:
+        # Z1 = sqrt(-2*ln(U1))*cos(2π*U2) ~ Normal(0,1)
+        # Z2 = sqrt(-2*ln(U1))*sin(2π*U2) ~ Normal(0,1)
+        # X = mu + sigma*Z ~ Normal(mu, sigma)
+        
+        n = len(numeros_u)
+        # Aseguramos un número par para generar pares de valores
+        if n % 2 != 0:
+            numeros_u = numeros_u[:-1]
+            n -= 1
+            
+        numeros_normales = []
+
+
+        # Recorre todo el arreglo de numero U[0;1) del primero hasta el ultimo y toma cada par para generar 2 numeros
+        # con distribución normal
+        for i in range(0, n, 2):
+            # Evitar el logaritmo de 0
+            u1 = max(numeros_u[i], 1e-10)
+            u2 = numeros_u[i+1]
+            
+            # Aplicar transformación Box-Muller
+            z1 = math.sqrt(-2.0 * math.log(u1)) * math.cos(2.0 * math.pi * u2)
+            z2 = math.sqrt(-2.0 * math.log(u1)) * math.sin(2.0 * math.pi * u2)
+            
+            # Transformar a la distribución normal deseada
+            x1 = mu + sigma * z1
+            x2 = mu + sigma * z2
+            
+            numeros_normales.append(x1)
+            numeros_normales.append(x2)
+            
+        return numeros_normales
+    
+
     def generar_numeros(self):
         try:
             # Obtener tamaño de muestra
@@ -156,8 +223,10 @@ class GeneradorNumerosAleatorios:
                 if a >= b:
                     raise ValueError("El valor de 'a' debe ser menor que 'b'")
                 # Generamos números en el rango [a, b)
-                # Usamos > a y <= b para garantizar que respetamos los intervalos semi-abiertos
-                self.numeros_generados = np.random.uniform(a, b, n)
+                semilla_aleatoria = random.randint(0, 4294967295)
+                numeros_u = GeneradorNumerosAleatorios.generar_rnd(semilla_aleatoria, n)  # Números con distribución [0,1)
+                self.numeros_generados = [a + (b - a) * u for u in numeros_u]  # Transformación a [a, b)
+                print(self.numeros_generados)
                 # Para asegurar que no hay valores exactamente iguales a b
                 self.numeros_generados = np.where(self.numeros_generados == b, a, self.numeros_generados)
                 titulo = f"Distribución Uniforme [{a}, {b})"
@@ -166,7 +235,9 @@ class GeneradorNumerosAleatorios:
                 lambda_val = float(self.param_lambda.get())
                 if lambda_val <= 0:
                     raise ValueError("Lambda debe ser mayor que 0")
-                self.numeros_generados = np.random.exponential(1/lambda_val, n)
+                semilla_aleatoria = random.randint(0, 4294967295)
+                numeros_u = GeneradorNumerosAleatorios.generar_rnd(semilla_aleatoria, n)  # Números con distribución [0,1)
+                self.numeros_generados = GeneradorNumerosAleatorios.generar_exponencial(numeros_u, lambda_val)
                 titulo = f"Distribución Exponencial [λ={lambda_val}]"
 
             elif distribucion == "normal":
@@ -174,7 +245,18 @@ class GeneradorNumerosAleatorios:
                 sigma = float(self.param_sigma.get())
                 if sigma <= 0:
                     raise ValueError("La desviación estándar debe ser mayor que 0")
-                self.numeros_generados = np.random.normal(mu, sigma, n)
+                # Método Box-Muller para generar números con distribución normal
+                # Si se requieren por ejemplo 11 valores, vamos a generar 12 
+                temp_n = n
+                if n % 2 != 0:
+                    temp_n += 1  # Asegurarnos de tener un número par de valores uniformes
+
+                semilla_aleatoria = random.randint(0, 4294967295)
+                numeros_u_adicionales = GeneradorNumerosAleatorios.generar_rnd(semilla_aleatoria + 1000, temp_n)
+                self.numeros_generados = GeneradorNumerosAleatorios.generar_normal(numeros_u_adicionales, mu, sigma)
+
+                # Por ultimo tomamos la cantidad de numeros que necesitabamos inicialmente (n)
+                self.numeros_generados = self.numeros_generados[:n]
                 titulo = f"Distribución Normal [μ={mu}, σ={sigma}]"
 
             # Redondear a 4 dígitos decimales
