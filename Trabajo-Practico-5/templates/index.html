@@ -1,0 +1,87 @@
+
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Simulación Peluquería - Parámetros</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body { background-color: #f8f9fa; }
+            .container { max-width: 600px; margin-top: 50px; }
+            .card { border: none; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.1); }
+            .dist-label { font-size: 0.9rem; font-weight: 500; text-align: center; margin-bottom: 0.5rem; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Parámetros de Simulación de Peluquería</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/simular" method="post">
+                        <div class="mb-3">
+                            <label for="tiempo_simulacion" class="form-label">Tiempo a Simular</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="tiempo_simulacion" name="tiempo_simulacion" required min="1" value="8">
+                                <select class="form-select" name="unidad_tiempo">
+                                    <option value="horas" selected>Horas</option>
+                                    <option value="dias">Días</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cantidad_iteraciones" class="form-label">Cantidad Máxima de Iteraciones a Mostrar</label>
+                            <input type="number" class="form-control" id="cantidad_iteraciones" name="cantidad_iteraciones" required min="1" max="100000" value="500">
+                        </div>
+                        <div class="mb-3">
+                            <label for="hora_comienzo" class="form-label">Mostrar Simulación Desde (Minuto Acumulado)</label>
+                            <input type="number" class="form-control" id="hora_comienzo" name="hora_comienzo" required min="0" value="0">
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <div class="dist-label">Distribución Tiempo Llegadas: U(a, b) ~ <code>a + RND * (b - a)</code></div>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="llegada_a" class="form-label">Valor de 'a'</label>
+                                    <input type="number" class="form-control" id="llegada_a" name="llegada_a" value="2" step="any">
+                                </div>
+                                <div class="col">
+                                    <label for="llegada_b" class="form-label">Valor de 'b'</label>
+                                    <input type="number" class="form-control" id="llegada_b" name="llegada_b" value="12" step="any">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="dist-label">Distribución Parámetro T: U(a, b) ~ <code>a + RND * (b - a)</code></div>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="atencion_a" class="form-label">Valor de 'a'</label>
+                                    <input type="number" class="form-control" id="atencion_a" name="atencion_a" value="130" step="any">
+                                </div>
+                                <div class="col">
+                                    <label for="atencion_b" class="form-label">Valor de 'b'</label>
+                                    <input type="number" class="form-control" id="atencion_b" name="atencion_b" value="180" step="any">
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <label for="d_corte" class="form-label">Valor de Corte D</label>
+                            <input type="number" class="form-control" id="d_corte" name="d_corte" value="700" step="any">
+                        </div>
+                        <div class="mb-3">
+                            <label for="paso_h_euler" class="form-label">Paso (h) para Método de Euler</label>
+                            <input type="number" class="form-control" id="paso_h_euler" name="paso_h_euler" step="0.001" required min="0.001" value="0.1">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Iniciar Simulación</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    

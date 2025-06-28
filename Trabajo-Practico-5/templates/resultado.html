@@ -1,0 +1,156 @@
+
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Resultados de la Simulación</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body { background-color: #f8f9fa; }
+            .table-responsive { max-height: 70vh; }
+            th { position: sticky; top: 0; background-color: #343a40; color: white; white-space: nowrap; }
+            td { white-space: nowrap; }
+            .download-form-container {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 2rem;
+            }
+            .download-form {
+                background-color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+                max-width: 500px;
+                width: 100%;
+            }
+            .metric-card {
+                background-color: #fff;
+                border-radius: .75rem;
+                padding: 1.25rem;
+                text-align: center;
+                box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.075);
+                margin-bottom: 1rem;
+            }
+            .metric-title {
+                font-size: 0.9rem;
+                color: #6c757d;
+                font-weight: 500;
+            }
+            .metric-value {
+                font-size: 1.75rem;
+                font-weight: 700;
+                color: #343a40;
+            }
+            .formulas-card {
+                background-color: #e9ecef;
+                border: 1px solid #dee2e6;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid mt-4">
+            <h2 class="text-center mb-4">Resultados de la Simulación</h2>
+            
+            {% if data %}
+            <div class="download-form-container">
+                <div class="download-form card">
+                    <div class="card-body">
+                        <h5 class="card-title">Descargar Cálculo de Euler</h5>
+                        <p class="card-text small">Ingrese el <strong>Día</strong>, <strong>ID del Cliente</strong> y el paso (h) para descargar su cálculo de integración.</p>
+                        <form action="/descargar_euler" method="post" class="d-flex align-items-end">
+                             <div class="flex-grow-1 me-2">
+                                <label for="dia_euler" class="form-label">Día</label>
+                                <input type="number" class="form-control" id="dia_euler" name="dia_euler" required min="1">
+                             </div>
+                             <div class="flex-grow-1 me-2">
+                                <label for="cliente_id_euler" class="form-label">ID del Cliente</label>
+                                <input type="number" class="form-control" id="cliente_id_euler" name="cliente_id_euler" required min="1">
+                            </div>
+                            <div class="me-2">
+                                <label for="paso_h_euler" class="form-label">Paso (h)</label>
+                                <input type="number" class="form-control" id="paso_h_euler" name="paso_h_euler" step="0.001" required min="0.001" value="{{ paso_h_inicial or 0.1 }}">
+                            </div>
+                            <button type="submit" class="btn btn-success">Descargar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-title">CLIENTES TOTALES ATENDIDOS</div>
+                        <div class="metric-value">{{ metricas.total_atendidos }}</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-title">TIEMPO TOTAL DE ATENCIÓN (MIN)</div>
+                        <div class="metric-value">{{ metricas.total_acumulado }}</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-title">TIEMPO PROMEDIO DE ATENCIÓN (MIN)</div>
+                        <div class="metric-value">{{ metricas.promedio_atencion }}</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-title">DÍAS DE CIERRE A HORARIO</div>
+                        <div class="metric-value">{{ metricas.dias_cierre_a_horario }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-9">
+                    <div class="card formulas-card">
+                        <div class="card-header">
+                            <strong>Fórmulas Clave de la Simulación</strong>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item bg-transparent"><strong>Tiempo entre Llegadas (min):</strong> <code>{{ formula_params.llegada_a }} + RND * ({{ formula_params.llegada_b }} - {{ formula_params.llegada_a }})</code></li>
+                            <li class="list-group-item bg-transparent"><strong>Parámetro T de Atención:</strong> <code>{{ formula_params.atencion_a }} + RND * ({{ formula_params.atencion_b }} - {{ formula_params.atencion_a }})</code></li>
+                            <li class="list-group-item bg-transparent"><strong>Fin Impaciencia Cliente (min):</strong> <code>Reloj de Llegada + 30</code></li>
+                            <li class="list-group-item bg-transparent"><strong>Duración de Atención (t):</strong> Se obtiene resolviendo <code>dD/dt = C + 0.2*T + t²</code> hasta que <code>D > {{ formula_params.d_corte }}</code>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            {% for key in data[0].keys() %}
+                                <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                        <tr>
+                            {% for value in row.values() %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+            <div class="alert alert-warning" role="alert">
+              No se generaron datos para los parámetros ingresados. Intente con un tiempo de simulación mayor o más iteraciones.
+            </div>
+            {% endif %}
+
+            <div class="text-center mt-4 mb-4">
+                <a href="/" class="btn btn-primary">Volver a Parámetros</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    

@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import pandas as pd
-import random 
+import random
 import math
 '''
 Trabajo práctico 2 de Simulación Curso 4K3 2025 - Grupo 12
